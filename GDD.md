@@ -1,265 +1,79 @@
-# Knowledge Quest: AI产品经理知识对战卡牌游戏
+# Knowledge Quest — Game Design Documentation
 
-## 游戏设计大纲 (Game Design Document)
-
----
-
-## 1. 游戏概述
-
-**名称**: Knowledge Quest（知识征途）
-**类型**: 学习卡牌对战 + 开放世界探索
-**主题**: AI产品经理核心知识体系 + 跨学科思维模型（芒格多元思维）
-**平台**: Web (桌面浏览器优先)
-**引擎**: React + Vite + Tailwind CSS
+> **架构**：参考 [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) (`my-game`) 的设计文档体系——顶层概念 + 设计支柱 + 系统索引 + 每系统单独 GDD。
+> **本文件**：仅作为 `design/gdd/` 的索引入口。所有详细设计已拆分到 [`design/gdd/`](./design/gdd/)。
 
 ---
 
-## 2. 核心理念
+## 文档地图
 
-> "用对战验证理解，用遗忘驱动复习，用跨界打破边界。"
+### 顶层（Top-Level）
 
-- **学习即战斗**: 知识不是被动接收，而是在对抗中主动运用
-- **记忆衰退 = 领土侵占**: 基于艾宾浩斯遗忘曲线，不复习的区域会被"入侵"
-- **跨学科夺回**: 被侵占的领地需要原有知识 + 触类旁通的跨域知识才能收复
-- **多元思维模型**: 致敬芒格，鼓励从多个学科角度理解同一问题
+| 文档 | 作用 |
+|---|---|
+| [`design/gdd/game-concept.md`](./design/gdd/game-concept.md) | 游戏概念：电梯演讲、核心幻想、独特 hook、MDA、SDT、核心循环、MVP 分层 |
+| [`design/gdd/game-pillars.md`](./design/gdd/game-pillars.md) | 3 条非协商设计支柱 + 反支柱 + 冲突解决优先级 |
+| [`design/gdd/systems-index.md`](./design/gdd/systems-index.md) | 系统枚举、依赖图、优先级、推荐设计顺序、风险登记 |
+
+### 系统级 GDD（System-Level）
+
+| # | 系统 | 文档 | 优先级 | 依赖 |
+|---|---|---|---|---|
+| 1 | Auth & Persistence | [`design/gdd/auth.md`](./design/gdd/auth.md) | MVP | — |
+| 2 | Knowledge Graph | [`design/gdd/knowledge-graph.md`](./design/gdd/knowledge-graph.md) | MVP | Auth |
+| 3 | Card Generation Engine | [`design/gdd/card-system.md`](./design/gdd/card-system.md) | MVP | Knowledge Graph |
+| 4 | Battle (Hearthstone-style) | [`design/gdd/battle.md`](./design/gdd/battle.md) | MVP | Card Generation |
+| 5 | Memory Decay | [`design/gdd/memory-decay.md`](./design/gdd/memory-decay.md) | Vertical Slice | Knowledge Graph, Card Generation |
+| 6 | Boss & PvE AI | [`design/gdd/boss-ai.md`](./design/gdd/boss-ai.md) | MVP | Battle |
+| 7 | Deck Builder | `design/gdd/deck-builder.md` (TBD) | Vertical Slice | Card Generation |
+| 8 | UI Shell & Routing | [`design/gdd/ui-shell.md`](./design/gdd/ui-shell.md) | MVP | Auth |
+| 9 | Achievements & Meta | (TBD) | Full Vision | All |
 
 ---
 
-## 3. 知识体系（技能树分支）
+## 设计支柱速记
 
-### 主要知识域
+> 三句口诀贯穿所有决策（详见 [`game-pillars.md`](./design/gdd/game-pillars.md)）：
 
-| 知识域 | 图标 | 核心内容 | 颜色标识 |
-|--------|------|----------|----------|
-| **AI技术基础** | 🧠 | LLM、Agent、RAG、Prompt Engineering、微调、推理 | #6366f1 (靛蓝) |
-| **产品设计** | 🎯 | 需求分析、用户体验、产品路线图、MVP、A/B测试 | #f59e0b (琥珀) |
-| **商业洞察** | 📊 | 商业模式、增长策略、数据驱动、市场分析、定价 | #10b981 (翡翠绿) |
-| **思维框架** | 💡 | 第一性原理、逆向思维、系统思维、贝叶斯思维 | #8b5cf6 (紫罗兰) |
-| **跨学科** | 🔗 | 心理学、经济学、博弈论、复杂系统、认知科学 | #ec4899 (粉红) |
+1. **知识即卡牌** — 所有战力必须可追溯到一个知识节点
+2. **原创即秘技** — 用户产出的内容比预设内容更强、更独特
+3. **遗忘有代价** — 不复习就掉数值，没有躺平变强的路径
 
-### 知识节点示例
+**冲突优先级**：1 > 2 > 3
+
+---
+
+## MVP 范围速记
+
+详见 [`game-concept.md` §MVP Definition](./design/gdd/game-concept.md#mvp-definition)。
+
+**Required**：知识图谱 CRUD + 50 种子节点 + 卡牌生成 + 炉石式对战 + 1 个 Boss + 登录持久化
+**Excluded**：复杂卡牌效果、遗忘曲线（v2）、PvP、多 Boss、成就
+
+---
+
+## 文档模板与规范
+
+每份系统 GDD 遵循 `my-game` 的标准章节：
 
 ```
-AI技术基础
-├── 单Agent → 局限: 无法处理复杂多步任务、上下文窗口限制
-├── Multi-Agent → 局限: 协调成本高、一致性难保证
-├── RAG → 局限: 检索质量依赖、幻觉未完全消除
-├── Prompt Engineering → 局限: 脆弱性、不可复现
-├── 微调 → 局限: 数据需求大、灾难性遗忘
-└── ...
-
-产品设计
-├── MVP方法论 → 局限: 过度精简可能丢失核心价值
-├── 用户画像 → 局限: 静态画像难以捕捉行为变化
-└── ...
+Summary → Overview → Player Fantasy →
+Detailed Design (Core Rules / States / Interactions) →
+Formulas → Edge Cases → Dependencies → Tuning Knobs →
+Visual/Audio Requirements → Game Feel →
+UI Requirements → Cross-References →
+Acceptance Criteria → Open Questions
 ```
+
+模板源：`my-game/.claude/docs/templates/game-design-document.md`
 
 ---
 
-## 4. 核心玩法循环
+## 后续工作
 
-### 4.1 探索阶段
-```
-进入世界地图 → 选择节点 → 查看学习目标卡 → 学习知识内容 → 进入Boss战
-```
-
-### 4.2 战斗阶段（类炉石卡牌对战）
-```
-Boss出牌（概念卡） → 玩家反制 → 计算伤害 → 判定胜负
-     ↑                    ↓
-  下一回合 ←←←←←←←←← 连击/特殊效果
-```
-
-### 4.3 反制方式（混合模式）
-
-1. **选择题模式**（新手友好）
-   - Boss打出「单Agent」概念卡
-   - 屏幕显示 A/B/C/D 四个选项（局限/场景/弱点）
-   - 选中正确答案 → 造成伤害
-
-2. **手牌选卡模式**（中级）
-   - 玩家手持多张「局限卡」「场景卡」「解决方案卡」
-   - 选择最克制Boss概念的卡牌出击
-   - 相克关系越精准，伤害越高
-
-3. **开放输入模式**（高级）
-   - 直接输入关键词/场景描述
-   - 系统判定匹配度，给予对应伤害
-
-4. **多种题型轮流**
-   - 单选题 → 基础伤害
-   - 判断题 → 快速连击
-   - 填空题 → 暴击伤害
-   - 配对题 → 范围伤害
-
-### 4.4 战斗数值
-
-| 行为 | 效果 |
-|------|------|
-| 答对选择题 | Boss受到 10-15 伤害 |
-| 答对填空题 | Boss受到 20-25 伤害（暴击） |
-| 答对判断题 | Boss受到 8-12 伤害 + 下回合加速 |
-| 配对全对 | Boss受到 30 范围伤害 |
-| 连续答对 3 题 | 触发「知识共鸣」，伤害 ×1.5 |
-| 连续答对 5 题 | 触发「顿悟」，伤害 ×2 + 回复生命 |
-| 答错 | 玩家受到 15 伤害 + 连击重置 |
-| 超时 | 玩家受到 10 伤害 |
-
----
-
-## 5. 记忆衰退 & 领土侵占系统
-
-### 5.1 衰退规则
-- 每个已探索节点有一个「记忆值」(0-100)
-- 通关时记忆值 = 100
-- 每过**现实24小时**，记忆值下降一定比例（符合遗忘曲线）
-  - 24h: -30%
-  - 48h: -50%
-  - 7天: -80%
-- 复习可重置记忆值
-
-### 5.2 侵占触发
-- 当记忆值 < 30 时，节点变为「被侵占」状态
-- 被侵占节点变为暗灰色，上面出现「入侵者」标记
-- 相邻节点也会受影响（扩散）
-
-### 5.3 夺回机制
-- 夺回战 ≠ 原始战斗
-- 需要原有知识 + **跨学科知识**
-- 例：AI技术节点被侵占 → 夺回时除了AI知识，还需回答「产品设计」或「思维框架」相关问题
-- 这强制玩家建立知识间的连接
-
----
-
-## 6. 学习卡片系统
-
-### 6.1 知识卡片结构
-```json
-{
-  "id": "ai-single-agent",
-  "title": "单Agent架构",
-  "domain": "AI技术基础",
-  "level": 1,
-  "summary": "单个AI Agent独立完成任务的架构模式",
-  "keyPoints": [
-    "一个LLM + 工具调用 + 记忆",
-    "适合明确、单步骤任务",
-    "ReAct / Function Calling 范式"
-  ],
-  "limitations": [
-    "复杂多步骤任务容易出错",
-    "上下文窗口限制",
-    "缺乏自我纠错能力"
-  ],
-  "counterScenarios": [
-    "需要多角色协作的客服系统",
-    "需要长期规划的项目管理"
-  ],
-  "crossLinks": ["multi-agent", "prompt-engineering", "思维框架-系统思维"],
-  "bossCard": {
-    "name": "Agent独行者",
-    "hp": 100,
-    "attack": "打出概念牌，每回合施加压力"
-  }
-}
-```
-
-### 6.2 学习前置卡（关卡开始前展示）
-- 标题 + 一句话描述
-- 3-5个核心知识点
-- 相关知识链接
-- 本关学习目标
-- 预计用时
-
----
-
-## 7. 世界地图设计
-
-### 7.1 地图结构
-- 六角网格或自由浮动节点图
-- 每个节点代表一个知识点
-- 节点间连线表示知识依赖/关联
-- 节点状态：🔒锁定 | ⚡可挑战 | ✅已通关 | 🔥被侵占 | 💀需夺回
-
-### 7.2 初始状态
-- 中心节点解锁（入门教程）
-- 完成任意节点 → 解锁所有相邻节点
-- 类似 Hades 的自由探索，无强制路径
-
----
-
-## 8. 技术架构
-
-### 前端技术栈
-- **框架**: React 18 + TypeScript
-- **构建**: Vite
-- **样式**: Tailwind CSS
-- **动画**: Framer Motion
-- **状态管理**: Zustand
-- **图标**: Lucide React
-
-### 项目结构
-```
-knowledge-quest/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── cards/        # 知识卡片组件
-│   │   ├── battle/       # 战斗系统组件
-│   │   ├── map/          # 世界地图组件
-│   │   ├── ui/           # 通用UI组件
-│   │   └── layout/       # 布局组件
-│   ├── data/
-│   │   ├── knowledge/    # 知识库数据
-│   │   ├── questions/    # 题库数据
-│   │   └── bosses/       # Boss数据
-│   ├── stores/           # Zustand状态管理
-│   ├── hooks/            # 自定义hooks
-│   ├── utils/            # 工具函数
-│   ├── types/            # TypeScript类型
-│   ├── App.tsx
-│   └── main.tsx
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
-└── vite.config.ts
-```
-
----
-
-## 9. 开发路线图
-
-### Phase 1: 学习卡片展示系统 ✦ 当前
-- [ ] 知识卡片数据结构设计
-- [ ] 卡片分类浏览界面
-- [ ] 卡片详情展示（翻转动画）
-- [ ] 知识域筛选/搜索
-- [ ] 卡片间关联展示
-
-### Phase 2: 全局MVP
-- [ ] 世界地图（节点图）
-- [ ] 节点状态管理
-- [ ] 学习前置卡展示
-- [ ] Boss卡牌对战核心循环
-- [ ] 多种题型（选择/判断/填空/配对）
-- [ ] 伤害计算 + 连击系统
-- [ ] 记忆衰退 + 领土侵占
-- [ ] 跨学科夺回机制
-
-### Phase 3: 进阶功能（未来）
-- [ ] 开放输入模式（NLP匹配）
-- [ ] 更多知识域和Boss
-- [ ] 成就系统
-- [ ] 每日挑战
-- [ ] 知识图谱可视化
-- [ ] 社区题库贡献
-
----
-
-## 10. 美术风格
-
-- **整体**: 简洁现代卡片风，类炉石但更清爽
-- **配色**: 暗色背景 + 知识域专属色彩标识
-- **卡片**: 圆角卡片，微渐变，hover光效
-- **战斗**: 卡牌碰撞动画、伤害数字弹出、连击特效
-- **地图**: 星座图/神经网络风格的节点连接图
+- [x] ~~完成剩余 MVP 系统 GDD：`boss-ai.md`、`ui-shell.md`~~ ✅
+- [ ] 完成 Vertical Slice 剩余 GDD：`deck-builder.md`
+- [ ] 起草第一份 ADR：`docs/architecture/ADR-001-localStorage-vs-indexeddb.md`
+- [ ] Prototype 力导向图性能（最高风险）
+- [ ] 对每份 GDD 进行 design-review
+- [ ] 在 MVP 系统全部 approved 后跑 gate-check
